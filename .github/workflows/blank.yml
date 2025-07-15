@@ -1,0 +1,37 @@
+name: Apagar y Encender Fly.io
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 11:00 PM 
+    - cron: '9 9 * * *'   # 4:00 AM
+
+jobs:
+  apagar-app:
+    if: github.event.schedule == '0 4 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Autenticarse en Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: echo "$FLY_API_TOKEN" | flyctl auth login --token
+
+      - name: Apagar app
+        run: flyctl machine stop d8d9945a9e19e8 -a lunalimpia
+
+  encender-app:
+    if: github.event.schedule == '9 9 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Instalar Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Autenticarse en Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: echo "$FLY_API_TOKEN" | flyctl auth login --token
+
+      - name: Encender app
+        run: flyctl machine start d8d9945a9e19e8 -a lunalimpia
