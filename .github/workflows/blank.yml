@@ -2,12 +2,10 @@ name: Apagar y Encender Fly.io
 
 on:
   schedule:
-    - cron: '0 4 * * *'   # 11:00 PM 
-    - cron: '9 9 * * *'   # 4:00 AM
+    - cron: '0 4,9 * * *'  # Ejecutar a las 11:00pm y 4:00am Colombia (4:00am y 9:00am UTC)
 
 jobs:
-  apagar-app:
-    if: github.event.schedule == '0 4 * * *'
+  controlar-app:
     runs-on: ubuntu-latest
     steps:
       - name: Instalar Fly.io CLI
@@ -18,20 +16,19 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: echo "$FLY_API_TOKEN" | flyctl auth login --token
 
-      - name: Apagar app
-        run: flyctl machine stop d8d9945a9e19e8 -a lunalimpia
-
-  encender-app:
-    if: github.event.schedule == '9 9 * * *'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Instalar Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: Autenticarse en Fly.io
+      - name: Apagar o Encender Fly.io
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: echo "$FLY_API_TOKEN" | flyctl auth login --token
-
-      - name: Encender app
-        run: flyctl machine start d8d9945a9e19e8 -a lunalimpia
+          APP_NAME: lunalimpia
+          VM_ID: d8d9945a9e19e8
+          TZ: America/Bogota
+        run: |
+          HORA=$(TZ=$TZ date +%H)
+          echo "Hora actual en Colombia: $HORA"
+          if [ "$HORA" -eq 23 ]; then
+            echo "Apagando app..."
+            flyctl machine stop $VM_ID -a $APP_NAME
+          elif [ "$HORA" -eq 4 ]; then
+            echo "Encendiendo app..."
+            flyctl machine start $VM_ID -a $APP_NAME
+          else
+            echo "No se ejecuta acción a esta hora."
