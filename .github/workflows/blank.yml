@@ -2,7 +2,7 @@ name: Apagar y Encender Fly.io
 
 on:
   schedule:
-    - cron: '0 4,11 * * *'  # 11:00 PM y 6:00 AM hora Colombia (en UTC: 4 AM y 11 AM)
+    - cron: '0 4,11 * * *'  # 11:00 PM y 6:00 AM hora Colombia (UTC: 4 AM y 11 AM)
 
 jobs:
   controlar-app:
@@ -34,3 +34,4 @@ jobs:
             flyctl machine start $VM_ID -a $APP_NAME
           else
             echo "No se ejecuta acción a esta hora."
+          fi
